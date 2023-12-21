@@ -43,7 +43,7 @@ func (h *Handler) SearchVideoDoc() func(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"total": searchResult.Hits.Total,
+			"total": searchResult.Hits.Total.Value,
 			"data":  searchResult.Hits.Hits,
 		})
 	}

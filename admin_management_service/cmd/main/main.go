@@ -46,7 +46,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middlewares.Cors())
-	videoGroup := r.Group("/video")
+	videoGroup := r.Group("/video_doc")
 	{
 		videoGroup.GET("/:id", h.GetVideoDoc())
 		videoGroup.GET("/search", h.SearchVideoDoc())
@@ -54,7 +54,7 @@ func main() {
 		videoGroup.PUT("/", h.UpdateVideoDoc())
 		videoGroup.DELETE("/:id", h.DeleteVideoDoc())
 	}
-	drugGroup := r.Group("/drug")
+	drugGroup := r.Group("/drug_doc")
 	{
 		drugGroup.GET("/:id", h.GetDrugDoc())
 		drugGroup.GET("/search", h.SearchDrugDoc())
