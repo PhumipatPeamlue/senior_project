@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
@@ -16,13 +17,15 @@ func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
 			}
 		}()
 
-		body := models.VideoDocDto{}
+		body := models.VideoDoc{
+			CreateAt: time.Now(),
+		}
 		if err = c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
 			return
 		}
 
-		if err = h.videoDocIndex.Insert(body.VideoDoc); err != nil {
+		if err = h.videoDocIndex.Insert(body); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't insert the video document"})
 			return
 		}

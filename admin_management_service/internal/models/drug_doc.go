@@ -1,11 +1,15 @@
 package models
 
+import "time"
+
 type DrugDoc struct {
-	TradeName   string `json:"trade_name"`
-	DrugName    string `json:"drug_name"`
-	Description string `json:"description"`
-	Preparation string `json:"preparation"`
-	Caution     string `json:"caution"`
+	TradeName   string    `json:"trade_name"`
+	DrugName    string    `json:"drug_name"`
+	Description string    `json:"description"`
+	Preparation string    `json:"preparation"`
+	Caution     string    `json:"caution"`
+	CreateAt    time.Time `json:"create_at"`
+	UpdateAt    time.Time `json:"update_at"`
 }
 
 type DrugDocDto struct {

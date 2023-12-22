@@ -12,11 +12,16 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/lpernett/godotenv"
 	"log"
 	"os"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	cfg := elasticsearch.Config{
 		Addresses: []string{fmt.Sprintf(os.Getenv("ES_URL"))},
 	}

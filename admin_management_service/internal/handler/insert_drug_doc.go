@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
@@ -16,13 +17,15 @@ func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
 			}
 		}()
 
-		body := models.DrugDocDto{}
+		body := models.DrugDoc{
+			CreateAt: time.Now(),
+		}
 		if err = c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
 			return
 		}
 
-		if err = h.drugDocIndex.Insert(body.DrugDoc); err != nil {
+		if err = h.drugDocIndex.Insert(body); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't insert the drug document"})
 			return
 		}

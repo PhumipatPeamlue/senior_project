@@ -1,9 +1,15 @@
 package models
 
+import (
+	"time"
+)
+
 type VideoDoc struct {
-	Title       string `json:"title"`
-	VideoUrl    string `json:"video_url"`
-	Description string `json:"description"`
+	Title       string    `json:"title"`
+	VideoUrl    string    `json:"video_url"`
+	Description string    `json:"description"`
+	CreateAt    time.Time `json:"create_at"`
+	UpdateAt    time.Time `json:"update_at"`
 }
 
 type VideoDocDto struct {

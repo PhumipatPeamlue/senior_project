@@ -2,9 +2,11 @@ package handler
 
 import (
 	"admin_management_service/internal/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) UpdateDrugDoc() func(c *gin.Context) {
@@ -22,6 +24,15 @@ func (h *Handler) UpdateDrugDoc() func(c *gin.Context) {
 			return
 		}
 
+		getResult, err := h.drugDocIndex.Get(body.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("can't get the drug document with id = %s", body.ID),
+			})
+		}
+
+		body.DrugDoc.CreateAt = getResult.Source.CreateAt
+		body.DrugDoc.UpdateAt = time.Now()
 		if err = h.drugDocIndex.Update(body.ID, body.DrugDoc); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't update the drug document"})
 			return
