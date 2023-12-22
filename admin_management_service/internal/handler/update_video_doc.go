@@ -2,7 +2,6 @@ package handler
 
 import (
 	"admin_management_service/internal/models"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -24,17 +23,33 @@ func (h *Handler) UpdateVideoDoc() func(c *gin.Context) {
 			return
 		}
 
-		getResult, err := h.videoDocIndex.Get(body.ID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("can't get the video document with id = %s", body.ID),
-			})
+		statusCode, err, getResult := h.videoDocIndex.Get(body.ID)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, body.ID)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
+			return
 		}
 
 		body.VideoDoc.CreateAt = getResult.Source.CreateAt
 		body.VideoDoc.UpdateAt = time.Now()
-		if err = h.videoDocIndex.Update(body.ID, body.VideoDoc); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't update the video document"})
+		statusCode, err = h.videoDocIndex.Update(body.ID, body.VideoDoc)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, body.ID)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 

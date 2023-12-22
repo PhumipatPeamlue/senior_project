@@ -20,13 +20,18 @@ func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
 		body := models.VideoDoc{
 			CreateAt: time.Now(),
 		}
-		if err = c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
+		err = h.handleJSONBadRequest(c, body)
+		if err != nil {
 			return
 		}
 
-		if err = h.videoDocIndex.Insert(body); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't insert the video document"})
+		statusCode, err := h.videoDocIndex.Insert(body)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 

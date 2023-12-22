@@ -16,8 +16,17 @@ func (h *Handler) DeleteVideoDoc() func(c *gin.Context) {
 		}()
 
 		id := c.Param("id")
-		if err = h.videoDocIndex.Delete(id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't delete the video document"})
+		statusCode, err := h.videoDocIndex.Delete(id)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, id)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 

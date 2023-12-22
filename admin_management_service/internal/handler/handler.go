@@ -4,6 +4,10 @@ import (
 	"admin_management_service/internal/elasticsearch/indices/drug_doc_index"
 	"admin_management_service/internal/elasticsearch/indices/video_doc_index"
 	"admin_management_service/internal/mysql/repositories/image_files"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 var (
@@ -54,4 +58,32 @@ func New(video video_doc_index.VideoDocIndexInterface, drug drug_doc_index.DrugD
 		drugDocIndex:  drug,
 		imageFileRepo: imageFiles,
 	}
+}
+
+func (h *Handler) handleInternalServerError(c *gin.Context) {
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"error": "Internal Server Error",
+	})
+}
+
+func (h *Handler) handleNotFound(c *gin.Context, name string) {
+	msg := fmt.Sprintf("%s is not found", name)
+	c.JSON(http.StatusNotFound, gin.H{
+		"message": msg,
+	})
+}
+
+func (h *Handler) handleJSONBadRequest(c *gin.Context, body interface{}) (err error) {
+	if err = c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
+	}
+	return
+}
+
+func (h *Handler) handleIntQuery(c *gin.Context, key string) (value int, err error) {
+	value, err = strconv.Atoi(c.Query(key))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("%s is not integer", key)})
+	}
+	return
 }

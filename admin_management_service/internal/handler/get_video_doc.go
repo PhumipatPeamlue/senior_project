@@ -2,7 +2,6 @@ package handler
 
 import (
 	"admin_management_service/internal/models"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -18,11 +17,17 @@ func (h *Handler) GetVideoDoc() func(c *gin.Context) {
 		}()
 
 		id := c.Param("id")
-		getResult, err := h.videoDocIndex.Get(id)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("can't get the video document with id = %s", id),
-			})
+		statusCode, err, getResult := h.videoDocIndex.Get(id)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, id)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 
