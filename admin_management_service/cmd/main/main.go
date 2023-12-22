@@ -20,7 +20,13 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal(err.Error())
+		if os.IsNotExist(err) {
+			// Handle the case where the file does not exist
+			log.Println("No .env file found.")
+		} else {
+			// Handle other errors
+			log.Fatal("Error loading .env file:", err)
+		}
 	}
 	cfg := elasticsearch.Config{
 		Addresses: []string{fmt.Sprintf(os.Getenv("ES_URL"))},
