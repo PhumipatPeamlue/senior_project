@@ -18,8 +18,8 @@ func (h *Handler) UpdateVideoDoc() func(c *gin.Context) {
 		}()
 
 		body := models.VideoDocDto{}
-		if err = c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
+		err = h.handleJSONBadRequest(c, body)
+		if err != nil {
 			return
 		}
 
