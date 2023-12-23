@@ -2,7 +2,6 @@ package handler
 
 import (
 	"admin_management_service/internal/models"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -19,22 +18,38 @@ func (h *Handler) UpdateDrugDoc() func(c *gin.Context) {
 		}()
 
 		body := models.DrugDocDto{}
-		if err = c.ShouldBindJSON(&body); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
+		err = h.handleJSONBadRequest(c, body)
+		if err != nil {
 			return
 		}
 
-		getResult, err := h.drugDocIndex.Get(body.ID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("can't get the drug document with id = %s", body.ID),
-			})
+		statusCode, err, getResult := h.drugDocIndex.Get(body.ID)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, body.ID)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
+			return
 		}
 
 		body.DrugDoc.CreateAt = getResult.Source.CreateAt
 		body.DrugDoc.UpdateAt = time.Now()
-		if err = h.drugDocIndex.Update(body.ID, body.DrugDoc); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "can't update the drug document"})
+		statusCode, err = h.drugDocIndex.Update(body.ID, body.DrugDoc)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode == 404 {
+			h.handleNotFound(c, body.ID)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 

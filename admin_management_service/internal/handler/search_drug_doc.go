@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func (h *Handler) SearchDrugDoc() func(c *gin.Context) {
@@ -17,14 +16,12 @@ func (h *Handler) SearchDrugDoc() func(c *gin.Context) {
 			}
 		}()
 
-		page, err := strconv.Atoi(c.Query("page"))
+		page, err := h.handleIntQuery(c, "page")
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "page is invalid type"})
 			return
 		}
-		pageSize, err := strconv.Atoi(c.Query("page_size"))
+		pageSize, err := h.handleIntQuery(c, "page_size")
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "page_size is invalid type"})
 			return
 		}
 		keyword := c.Query("keyword")
@@ -36,9 +33,13 @@ func (h *Handler) SearchDrugDoc() func(c *gin.Context) {
 			query = fmt.Sprintf(searchQueryDrugDoc, (page-1)*pageSize, pageSize, keyword)
 		}
 
-		searchResult, err := h.drugDocIndex.Search(query)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		statusCode, err, searchResult := h.drugDocIndex.Search(query)
+		if statusCode == 500 {
+			h.handleInternalServerError(c)
+			return
+		}
+		if statusCode != 200 {
+			c.JSON(statusCode, gin.H{"message": err.Error()})
 			return
 		}
 

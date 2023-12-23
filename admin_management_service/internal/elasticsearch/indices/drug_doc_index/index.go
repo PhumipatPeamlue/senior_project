@@ -12,11 +12,11 @@ import (
 
 type DrugDocIndexInterface interface {
 	CreateIndex() (err error)
-	Get(id string) (res models.DrugDocGetResult, err error)
-	Search(query string) (res models.DrugDocSearchResult, err error)
-	Insert(doc models.DrugDoc) (err error)
-	Update(id string, doc models.DrugDoc) (err error)
-	Delete(id string) (err error)
+	Get(id string) (statusCode int, err error, res models.DrugDocGetResult)
+	Search(query string) (statusCode int, err error, res models.DrugDocSearchResult)
+	Insert(doc models.DrugDoc) (statusCode int, err error)
+	Update(id string, doc models.DrugDoc) (statusCode int, err error)
+	Delete(id string) (statusCode int, err error)
 }
 
 type DrugDocIndex struct {
@@ -54,75 +54,96 @@ func (d *DrugDocIndex) CreateIndex() (err error) {
 	return
 }
 
-func (d *DrugDocIndex) Get(id string) (res models.DrugDocGetResult, err error) {
+func (d *DrugDocIndex) Get(id string) (statusCode int, err error, res models.DrugDocGetResult) {
+	statusCode = 200
 	resp, err := d.es.Get(d.index, id)
 	if err != nil {
+		statusCode = 500
 		return
 	}
 	if resp.IsError() {
+		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 		return
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		statusCode = 500
+	}
 	return
 }
 
-func (d *DrugDocIndex) Insert(doc models.DrugDoc) (err error) {
+func (d *DrugDocIndex) Insert(doc models.DrugDoc) (statusCode int, err error) {
+	statusCode = 200
 	b, err := json.Marshal(doc)
 	if err != nil {
+		statusCode = 500
 		return
 	}
 
 	resp, err := d.es.Index(d.index, bytes.NewReader(b))
 	if err != nil {
+		statusCode = 500
 		return
 	}
 	if resp.IsError() {
+		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 	}
 	return
 }
 
-func (d *DrugDocIndex) Search(query string) (res models.DrugDocSearchResult, err error) {
+func (d *DrugDocIndex) Search(query string) (statusCode int, err error, res models.DrugDocSearchResult) {
+	statusCode = 200
 	resp, err := d.es.Search(
 		d.es.Search.WithIndex(d.index),
 		d.es.Search.WithBody(strings.NewReader(query)),
 	)
 	if err != nil {
+		statusCode = 500
 		return
 	}
 	if resp.IsError() {
+		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 		return
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err = json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		statusCode = 500
+	}
 	return
 }
 
-func (d *DrugDocIndex) Update(id string, doc models.DrugDoc) (err error) {
+func (d *DrugDocIndex) Update(id string, doc models.DrugDoc) (statusCode int, err error) {
+	statusCode = 200
 	b, err := json.Marshal(doc)
 	if err != nil {
+		statusCode = 500
 		return
 	}
 
 	resp, err := d.es.Update(d.index, id, bytes.NewReader([]byte(fmt.Sprintf(`{"doc":%s}`, b))))
 	if err != nil {
+		statusCode = 500
 		return
 	}
 	if resp.IsError() {
+		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 	}
 	return
 }
 
-func (d *DrugDocIndex) Delete(id string) (err error) {
+func (d *DrugDocIndex) Delete(id string) (statusCode int, err error) {
+	statusCode = 200
 	resp, err := d.es.Delete(d.index, id)
 	if err != nil {
+		statusCode = 500
 		return
 	}
 	if resp.IsError() {
+		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 	}
 	return
