@@ -17,8 +17,10 @@ func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
 			}
 		}()
 
+		now := time.Now()
 		body := models.DrugDoc{
-			CreateAt: time.Now(),
+			CreateAt: now,
+			UpdateAt: now,
 		}
 		err = h.handleJSONBadRequest(c, body)
 		if err != nil {

@@ -17,8 +17,10 @@ func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
 			}
 		}()
 
+		now := time.Now()
 		body := models.VideoDoc{
-			CreateAt: time.Now(),
+			CreateAt: now,
+			UpdateAt: now,
 		}
 		err = h.handleJSONBadRequest(c, body)
 		if err != nil {
