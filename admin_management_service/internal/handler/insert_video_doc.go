@@ -27,7 +27,7 @@ func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
 			return
 		}
 
-		statusCode, err := h.videoDocIndex.Insert(body)
+		statusCode, err, id := h.videoDocIndex.Insert(body)
 		if statusCode == 500 {
 			h.handleInternalServerError(c)
 			return
@@ -37,6 +37,9 @@ func (h *Handler) InsertVideoDoc() func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "add the video document successfully"})
+		c.JSON(http.StatusOK, gin.H{
+			"message": "add the video document successfully",
+			"doc_id":  id,
+		})
 	}
 }

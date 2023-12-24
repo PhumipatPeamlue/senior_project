@@ -14,7 +14,7 @@ type VideoDocIndexInterface interface {
 	CreateIndex() (err error)
 	Get(id string) (statusCode int, err error, res models.VideoDocGetResult)
 	Search(query string) (statusCode int, err error, res models.VideoDocSearchResult)
-	Insert(doc models.VideoDoc) (statusCode int, err error)
+	Insert(doc models.VideoDoc) (statusCode int, err error, id string)
 	Update(id string, doc models.VideoDoc) (statusCode int, err error)
 	Delete(id string) (statusCode int, err error)
 }
@@ -73,7 +73,7 @@ func (v *VideoDocIndex) Get(id string) (statusCode int, err error, res models.Vi
 	return
 }
 
-func (v *VideoDocIndex) Insert(doc models.VideoDoc) (statusCode int, err error) {
+func (v *VideoDocIndex) Insert(doc models.VideoDoc) (statusCode int, err error, id string) {
 	statusCode = 200
 	b, err := json.Marshal(doc)
 	if err != nil {
@@ -90,6 +90,18 @@ func (v *VideoDocIndex) Insert(doc models.VideoDoc) (statusCode int, err error) 
 		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 	}
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return
+	}
+	id, ok := result["_id"].(string)
+	if !ok {
+		err = fmt.Errorf("document's id not found in response")
+		return
+	}
+
 	return
 }
 

@@ -14,7 +14,7 @@ type DrugDocIndexInterface interface {
 	CreateIndex() (err error)
 	Get(id string) (statusCode int, err error, res models.DrugDocGetResult)
 	Search(query string) (statusCode int, err error, res models.DrugDocSearchResult)
-	Insert(doc models.DrugDoc) (statusCode int, err error)
+	Insert(doc models.DrugDoc) (statusCode int, err error, id string)
 	Update(id string, doc models.DrugDoc) (statusCode int, err error)
 	Delete(id string) (statusCode int, err error)
 }
@@ -73,7 +73,7 @@ func (d *DrugDocIndex) Get(id string) (statusCode int, err error, res models.Dru
 	return
 }
 
-func (d *DrugDocIndex) Insert(doc models.DrugDoc) (statusCode int, err error) {
+func (d *DrugDocIndex) Insert(doc models.DrugDoc) (statusCode int, err error, id string) {
 	statusCode = 200
 	b, err := json.Marshal(doc)
 	if err != nil {
@@ -90,6 +90,18 @@ func (d *DrugDocIndex) Insert(doc models.DrugDoc) (statusCode int, err error) {
 		statusCode = resp.StatusCode
 		err = fmt.Errorf("%s", resp.String())
 	}
+	defer resp.Body.Close()
+
+	var result map[string]interface{}
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return
+	}
+	id, ok := result["_id"].(string)
+	if !ok {
+		err = fmt.Errorf("document's id not found in response")
+		return
+	}
+
 	return
 }
 

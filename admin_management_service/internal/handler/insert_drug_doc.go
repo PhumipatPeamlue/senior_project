@@ -27,7 +27,7 @@ func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
 			return
 		}
 
-		statusCode, err := h.drugDocIndex.Insert(body)
+		statusCode, err, id := h.drugDocIndex.Insert(body)
 		if statusCode == 500 {
 			h.handleInternalServerError(c)
 			return
@@ -37,6 +37,9 @@ func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "add the drug document successfully"})
+		c.JSON(http.StatusOK, gin.H{
+			"message": "add the drug document successfully",
+			"doc_id":  id,
+		})
 	}
 }
