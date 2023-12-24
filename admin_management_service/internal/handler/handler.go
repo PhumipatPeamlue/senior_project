@@ -73,13 +73,6 @@ func (h *Handler) handleNotFound(c *gin.Context, name string) {
 	})
 }
 
-func (h *Handler) handleJSONBadRequest(c *gin.Context, body interface{}) (err error) {
-	if err = c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
-	}
-	return
-}
-
 func (h *Handler) handleIntQuery(c *gin.Context, key string) (value int, err error) {
 	value, err = strconv.Atoi(c.Query(key))
 	if err != nil {

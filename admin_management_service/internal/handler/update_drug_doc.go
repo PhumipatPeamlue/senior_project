@@ -18,8 +18,8 @@ func (h *Handler) UpdateDrugDoc() func(c *gin.Context) {
 		}()
 
 		body := models.DrugDocDto{}
-		err = h.handleJSONBadRequest(c, body)
-		if err != nil {
+		if err = c.ShouldBindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
 			return
 		}
 

@@ -22,8 +22,8 @@ func (h *Handler) InsertDrugDoc() func(c *gin.Context) {
 			CreateAt: now,
 			UpdateAt: now,
 		}
-		err = h.handleJSONBadRequest(c, body)
-		if err != nil {
+		if err = c.ShouldBindJSON(&body); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "can't bind JSON"})
 			return
 		}
 
