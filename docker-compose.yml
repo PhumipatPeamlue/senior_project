@@ -66,6 +66,15 @@ services:
     networks:
       - spnet
 
+  drug_label_extraction_service:
+    build:
+      context: ./drug_label_extraction_service/app
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    networks:
+      - spnet
+
 networks:
   spnet:
 
