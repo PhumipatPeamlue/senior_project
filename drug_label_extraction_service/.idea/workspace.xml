@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d11c4c01-7ce3-41cd-9acd-a919ce82a08e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/.idea/drug_label_extraction.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/extract_data_service/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/image_preprocessing_service/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/images/logo.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/app/ocr_service/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/banphaeo.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/banphaeo2.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img10.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img11.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img5.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img6.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img7.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/img8.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/logo.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/rama.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/rama2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/rama3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/images/rama4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/main.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/match_template.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/notebook.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/notebook/playground.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../drug_label_extraction/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/drug_label.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/extract_data/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/image_preprocessing/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/services/ocr/service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img10.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img11.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img5.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img6.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img7.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/img8.JPG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/images/logo.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notebooks/main.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/.idea/user_management_service.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/cmd/main/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/go.sum" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/add_pet.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/delete_pet.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/delete_user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/get_all_pets.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/get_pet.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/get_profile.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/handler.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/line_callback.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/line_login.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/update_pet.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/handler/update_time_setting.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/line/client.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/middlewares/cors.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/middlewares/middleware.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/middlewares/session.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/models/line.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/models/pet.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/models/user.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/mysql/mysql.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/mysql/repositories/pet/repository.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../user_management_service/internal/mysql/repositories/user/repository.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Jupyter Notebook" />
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="2a79fU1mt2R4kD7LcfDZ0GntgH6" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.run.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/besto/playground/senior_project/drug_label_extraction_service/notebooks",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/notebooks" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/services" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.run">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="drug_label_extraction_service" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="drug_label_extraction_service" type="PythonConfigurationType" factoryName="Python">
+      <module name="drug_label_extraction_service" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="drug_label_extraction_service" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.run" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-50da183f06c8-2887949eec09-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.13135.95" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d11c4c01-7ce3-41cd-9acd-a919ce82a08e" name="Changes" comment="" />
+      <created>1703658854058</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1703658854058</updated>
+      <workItem from="1703658855801" duration="5101000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
