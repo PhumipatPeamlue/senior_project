@@ -26,7 +26,7 @@ usage_config = '--oem 3 --psm 6 -l tha'
 drug_name_config = '--oem 3 --psm 6 -l tha+eng'
 
 
-@app.get("/drug_label/extract/")
+@app.post("/drug_label/extract/")
 async def extract_drugs(file: UploadFile):
     try:
         # with open(file.filename, "wb") as f:
