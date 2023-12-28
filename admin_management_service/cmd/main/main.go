@@ -76,9 +76,11 @@ func main() {
 	imageGroup := r.Group("/image")
 	{
 		imageGroup.GET("/paths/:id", h.GetAllImagePaths())
-		imageGroup.GET("/:filename", h.GetImage())
+		//imageGroup.GET("/:filename", h.GetImage())
+		imageGroup.GET("/:id", h.GetImageByDocID())
 		imageGroup.POST("/:id", h.InsertImage())
-		imageGroup.DELETE("/:id", h.DeleteImage())
+		//imageGroup.DELETE("/:id", h.DeleteImage())
+		imageGroup.DELETE("/:id", h.DeleteImageByDocID())
 	}
 
 	if err = r.Run(":8080"); err != nil {

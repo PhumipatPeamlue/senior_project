@@ -10,6 +10,7 @@ type ImageFilesRepoInterface interface {
 	Select(docID string) (res models.ImageFiles, err error)
 	Insert(data models.ImageFile) (id int64, err error)
 	Delete(id int64) (err error)
+	DeleteByDocID(docID string) (err error)
 }
 
 type ImageFilesRepo struct {
@@ -75,5 +76,11 @@ func (i *ImageFilesRepo) Insert(data models.ImageFile) (id int64, err error) {
 func (i *ImageFilesRepo) Delete(id int64) (err error) {
 	query := "DELETE FROM image_files WHERE id = ?"
 	_, err = i.db.Exec(query, id)
+	return
+}
+
+func (i *ImageFilesRepo) DeleteByDocID(docID string) (err error) {
+	query := "DELETE FROM image_files WHERE doc_id = ?"
+	_, err = i.db.Exec(query, docID)
 	return
 }
