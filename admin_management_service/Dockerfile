@@ -12,7 +12,7 @@ COPY . .
 
 RUN chmod +x ./scripts/wait_es.sh
 
-RUN go build -o main ./cmd/main
+RUN go build -o main .
 
 ENV ES_URL=http://elasticsearch:9200
 ENV MYSQL_DSN=root:root@tcp(mysql:3306)/senior_project

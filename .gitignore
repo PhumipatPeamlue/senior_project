@@ -1,3 +1,6 @@
-admin_management_service/.env
-admin_management_service/.idea
+.env
+.idea/
+.venv/
+.vscode/
+
 admin_management_service/uploads
