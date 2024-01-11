@@ -10,15 +10,13 @@ import (
 	"admin_management_service/repositories/video_doc_repository"
 	"admin_management_service/services/drug_doc_service"
 	"admin_management_service/services/video_doc_service"
-	"database/sql"
+	"log"
+	"time"
+
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 func main() {
@@ -26,24 +24,9 @@ func main() {
 	cfg := elasticsearch.Config{
 		Addresses: []string{appConfig.ElasticURL},
 	}
-	es, err := elasticsearch.NewTypedClient(cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
+	es := config.InitElasticsearch(cfg)
 
-	db, err := sql.Open("mysql", appConfig.MysqlDSN)
-	if err != nil {
-		log.Fatal(err)
-	}
-	script, err := os.ReadFile(filepath.Join("scripts", "database.sql"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec(string(script))
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := config.InitMysql(appConfig.MysqlDSN)
 
 	videoDocRepo := video_doc_repository.NewVideoDocRepo(es, "video_doc")
 	drugDocRepo := drug_doc_repository.NewDrugDocRepo(es, "drug_doc")
@@ -84,7 +67,7 @@ func main() {
 		docImageGroup.GET("/:filename", docImageHandler.GetImage)
 	}
 
-	if err = r.Run(":8080"); err != nil {
+	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }
