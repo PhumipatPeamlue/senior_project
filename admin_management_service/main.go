@@ -2,85 +2,89 @@ package main
 
 import (
 	"admin_management_service/config"
-	"admin_management_service/handler/drug_doc_handler"
-	"admin_management_service/handler/image_handler"
-	"admin_management_service/handler/video_doc_handler"
+	"admin_management_service/handlers/doc_image_handler"
+	"admin_management_service/handlers/drug_doc_handler"
+	"admin_management_service/handlers/video_doc_handler"
+	"admin_management_service/repositories/doc_image_repository"
 	"admin_management_service/repositories/drug_doc_repository"
-	"admin_management_service/repositories/image_info_repository"
 	"admin_management_service/repositories/video_doc_repository"
 	"admin_management_service/services/drug_doc_service"
 	"admin_management_service/services/video_doc_service"
-	"log"
-	"path/filepath"
-
-	"github.com/gin-contrib/cors"
-
+	"database/sql"
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"log"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 func main() {
 	appConfig := config.LoadConfig()
-
 	cfg := elasticsearch.Config{
 		Addresses: []string{appConfig.ElasticURL},
 	}
-	es := config.ConnectES(cfg)
+	es, err := elasticsearch.NewTypedClient(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	db := config.ConnectMySQL(appConfig.MysqlDSN)
-	defer db.Close()
+	db, err := sql.Open("mysql", appConfig.MysqlDSN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	script, err := os.ReadFile(filepath.Join("scripts", "database.sql"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	config.CreateIndex(es, "video_doc")
-	config.CreateIndex(es, "drug_doc")
-	config.CreateTable(filepath.Join("scripts", "database.sql"), db)
+	_, err = db.Exec(string(script))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	imageInfoRepo := image_info_repository.New(db)
-	imageHandler := image_handler.New(imageInfoRepo)
-
-	videoDocRepo := video_doc_repository.New(es, "video_doc")
-	videoDocService := video_doc_service.New()
-	videoDocHandler := video_doc_handler.New(videoDocRepo, videoDocService)
-
-	drugDocRepo := drug_doc_repository.New(es, "drug_doc")
-	drugDocService := drug_doc_service.New()
-	drugDocHandler := drug_doc_handler.New(drugDocRepo, drugDocService)
+	videoDocRepo := video_doc_repository.NewVideoDocRepo(es, "video_doc")
+	drugDocRepo := drug_doc_repository.NewDrugDocRepo(es, "drug_doc")
+	docImageRepo := doc_image_repository.NewDocImageRepo(db)
+	videoDocService := video_doc_service.NewVideoDocService(videoDocRepo, docImageRepo)
+	drugDocService := drug_doc_service.NewDrugDocService(drugDocRepo, docImageRepo)
+	videoDocHandler := video_doc_handler.NewVideoDocHandler(videoDocService)
+	drugDocHandler := drug_doc_handler.NewDrugDocHandler(drugDocService)
+	docImageHandler := doc_image_handler.NewDocImageHandler()
 
 	r := gin.Default()
-
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"*"},
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"*"},
 		AllowCredentials: true,
-		MaxAge:           12 * 3600,
+		MaxAge:           12 * time.Hour,
 	}))
-
 	videoDocGroup := r.Group("/video_doc")
 	{
-		videoDocGroup.GET("/:doc_id", videoDocHandler.GetVideoDoc)
-		videoDocGroup.GET("/search", videoDocHandler.Search)
-		videoDocGroup.POST("/", videoDocHandler.AddVideoDoc)
-		videoDocGroup.PUT("/", videoDocHandler.UpdateVideoDoc)
-		videoDocGroup.DELETE("/:doc_id", videoDocHandler.DeleteVideoDoc)
+		videoDocGroup.GET("/:doc_id", videoDocHandler.HandleGetVideoDoc)
+		videoDocGroup.GET("/search", videoDocHandler.HandleSearchVideoDoc)
+		videoDocGroup.POST("/", videoDocHandler.HandleCreateVideoDoc)
+		videoDocGroup.PUT("/", videoDocHandler.HandleUpdateVideoDoc)
+		videoDocGroup.DELETE("/:doc_id", videoDocHandler.HandleDeleteVideoDoc)
 	}
 	drugDocGroup := r.Group("/drug_doc")
 	{
-		drugDocGroup.GET("/:doc_id", drugDocHandler.GetDrugDoc)
-		drugDocGroup.GET("/search", drugDocHandler.Search)
-		drugDocGroup.POST("/", drugDocHandler.AddDrugDoc)
-		drugDocGroup.PUT("/", drugDocHandler.UpdateDrugDoc)
-		drugDocGroup.DELETE("/:doc_id", drugDocHandler.DeleteDrugDoc)
+		drugDocGroup.GET("/:doc_id", drugDocHandler.HandleGetDrugDoc)
+		drugDocGroup.GET("/search", drugDocHandler.HandleSearchDrugDoc)
+		drugDocGroup.POST("/", drugDocHandler.HandleCreateDrugDoc)
+		drugDocGroup.PUT("/", drugDocHandler.HandleUpdateDrugDoc)
+		drugDocGroup.DELETE("/:doc_id", drugDocHandler.HandleDeleteDrugDoc)
 	}
-	imageGroup := r.Group("/image")
+	docImageGroup := r.Group("/image")
 	{
-		imageGroup.GET("/:doc_id", imageHandler.GetImage)
-		imageGroup.POST("/:doc_id", imageHandler.UploadImage)
-		imageGroup.PUT("/:doc_id", imageHandler.ChangeImage)
-		imageGroup.DELETE("/:doc_id", imageHandler.DeleteImage)
+		docImageGroup.GET("/:filename", docImageHandler.GetImage)
 	}
 
-	if err := r.Run(); err != nil {
+	if err = r.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }
