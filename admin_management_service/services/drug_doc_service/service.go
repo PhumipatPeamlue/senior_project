@@ -1,181 +1,217 @@
 package drug_doc_service
 
 import (
-	"admin_management_service/errs"
-	"admin_management_service/models"
-	"admin_management_service/ports"
 	"errors"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"log"
-	"net/http"
-	"os"
+	"mime/multipart"
+	"senior_project/admin_management_service/repositories/drug_doc_repository"
+	"senior_project/admin_management_service/repositories/image_storage_repository"
 	"time"
 )
 
-type drugDocService struct {
-	drugDocRepo  ports.DrugDocRepo
-	docImageRepo ports.DocImageRepo
+type service struct {
+	drugDocRepo      drug_doc_repository.DrugDocRepository
+	imageStorageRepo image_storage_repository.ImageStorageRepository
 }
 
-func (r *drugDocService) handleEsErr(err error) (newErr error) {
-	var esErr types.ElasticsearchError
-	if errors.As(err, &esErr) {
-		switch esErr.Status {
-		case http.StatusNotFound:
-			newErr = errs.DrugDocNotFoundError
-		default:
-			newErr = errs.UnexpectedError
-		}
-	} else {
-		newErr = errs.UnexpectedError
+func New(drugDocRepo drug_doc_repository.DrugDocRepository, imageStorageRepo image_storage_repository.ImageStorageRepository) DrugDocService {
+	return &service{
+		drugDocRepo:      drugDocRepo,
+		imageStorageRepo: imageStorageRepo,
+	}
+}
+
+func (s *service) handleErr(err error) error {
+	log.Println(err)
+	if errors.Is(err, drug_doc_repository.ErrDrugDocNotFound) {
+		return ErrDrugDocNotFound
+	}
+	return ErrInternalDrugDocService
+}
+
+// GetDrugDoc implements DrugDocService.
+func (s *service) GetDrugDoc(docID string) (getRes *GetResponse, err error) {
+	doc, err := s.drugDocRepo.Get(docID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
+	}
+
+	var imageURL string
+	if len(doc.ImageName) != 0 {
+		imageURL = fmt.Sprintf("http://localhost:8080/image/%s", doc.ImageName)
+	}
+	getRes = &GetResponse{
+		Doc: DrugDoc{
+			ID:          docID,
+			TradeName:   doc.TradeName,
+			DrugName:    doc.DrugName,
+			Description: doc.Description,
+			Preparation: doc.Preparation,
+			Caution:     doc.Caution,
+			CreateAt:    doc.CreateAt,
+			UpdateAt:    doc.UpdateAt,
+		},
+		ImageURL: imageURL,
 	}
 	return
 }
 
-func (r *drugDocService) handleMysqlErr(err error) (newErr error) {
-	if errors.Is(err, errs.DocImageNotFoundError) {
-		newErr = errs.DocImageNotFoundError
-	} else {
-		newErr = errs.UnexpectedError
-	}
-	return
-}
-
-func (r *drugDocService) CreateDrugDoc(doc models.DrugDoc, imageName string, imagePath string) (err error) {
+// CreateDrugDoc implements DrugDocService.
+func (s *service) CreateDrugDoc(newDocReq *NewDrugDocRequest) (err error) {
 	now := time.Now()
-	doc.CreateAt = &now
-	doc.UpdateAt = &now
-	docID, err := r.drugDocRepo.Index(doc)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
+	doc := drug_doc_repository.DrugDoc{
+		TradeName:   newDocReq.TradeName,
+		DrugName:    newDocReq.DrugName,
+		Description: newDocReq.Description,
+		Preparation: newDocReq.Preparation,
+		Caution:     newDocReq.Caution,
+		CreateAt:    &now,
+		UpdateAt:    &now,
 	}
-
-	docImage := models.DocImage{
-		DocID: docID,
-		Name:  imageName,
-		Path:  imagePath,
+	if err = s.drugDocRepo.Create(doc); err != nil {
+		err = s.handleErr(err)
 	}
-	if err = r.docImageRepo.Insert(docImage); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-	}
-
 	return
 }
 
-func (r *drugDocService) GetDrugDoc(docID string) (doc models.DrugDocWithID, imageURL string, err error) {
-	doc, err = r.drugDocRepo.Get(docID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
+// CreateDrugDocWithImage implements DrugDocService.
+func (s *service) CreateDrugDocWithImage(newDocReq *NewDrugDocRequest, file *multipart.File, header *multipart.FileHeader) (err error) {
+	now := time.Now()
+	imageName := fmt.Sprintf("%s_%s", now.String(), header.Filename)
+	doc := drug_doc_repository.DrugDoc{
+		TradeName:   newDocReq.TradeName,
+		DrugName:    newDocReq.DrugName,
+		Description: newDocReq.Description,
+		Preparation: newDocReq.Preparation,
+		Caution:     newDocReq.Caution,
+		ImageName:   imageName,
+		CreateAt:    &now,
+		UpdateAt:    &now,
+	}
+	if err = s.drugDocRepo.Create(doc); err != nil {
+		err = s.handleErr(err)
 		return
 	}
 
-	docImage, err := r.docImageRepo.SelectByDocID(docID)
-	if err != nil {
-		err = r.handleMysqlErr(err)
-		return
+	if err = s.imageStorageRepo.Save(file, imageName); err != nil {
+		err = s.handleErr(err)
 	}
-
-	if len(docImage.Name) == 0 {
-		imageURL = ""
-		return
-	}
-	imageURL = fmt.Sprintf("http://localhost:8080/image/%s", docImage.Name)
 	return
 }
 
-func (r *drugDocService) SearchDrugDoc(from int, size int, keyword string) (docs []models.DrugDocWithID, total int, err error) {
+// SearchDrugDoc implements DrugDocService.
+func (s *service) SearchDrugDoc(page int, pageSize int, keyword string) (searchRes *SearchResponse, err error) {
+	var docs *[]drug_doc_repository.DrugDocWithID
+	var total int
+	from := (page - 1) * pageSize
 	if len(keyword) == 0 {
-		docs, total, err = r.drugDocRepo.SearchMatchAll(from, size)
+		docs, total, err = s.drugDocRepo.MatchAll(from, pageSize)
 	} else {
-		docs, total, err = r.drugDocRepo.SearchMatchKeyword(from, size, keyword)
+		docs, total, err = s.drugDocRepo.MatchKeyword(from, pageSize, keyword)
 	}
 
+	searchRes = &SearchResponse{
+		Data:  []DrugDoc{},
+		Total: total,
+	}
+
+	for _, doc := range *docs {
+		data := DrugDoc{
+			ID:          doc.ID,
+			TradeName:   doc.TradeName,
+			DrugName:    doc.DrugName,
+			Description: doc.Description,
+			Preparation: doc.Preparation,
+			Caution:     doc.Caution,
+			CreateAt:    doc.CreateAt,
+			UpdateAt:    doc.UpdateAt,
+		}
+		searchRes.Data = append(searchRes.Data, data)
+	}
 	return
 }
 
-func (r *drugDocService) UpdateDrugDoc(doc models.DrugDocWithID, imageName string, imagePath string) (err error) {
-	oldDoc, err := r.drugDocRepo.Get(doc.ID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
+// UpdateDrugDoc implements DrugDocService.
+func (s *service) UpdateDrugDoc(updateDocReq *UpdateDrugDocRequest) (err error) {
+	var doc *drug_doc_repository.DrugDocWithID
 	now := time.Now()
-	doc.CreateAt = oldDoc.CreateAt
+	doc, err = s.drugDocRepo.Get(updateDocReq.ID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
+	}
+
+	doc.TradeName = updateDocReq.TradeName
+	doc.DrugName = updateDocReq.DrugName
+	doc.Description = updateDocReq.Description
+	doc.Preparation = updateDocReq.Preparation
+	doc.Caution = updateDocReq.Caution
 	doc.UpdateAt = &now
-	if err = r.drugDocRepo.Update(doc); err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
-	oldDocImage, err := r.docImageRepo.SelectByDocID(doc.ID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	newDocImage := models.DocImage{
-		DocID: doc.ID,
-		Name:  imageName,
-		Path:  imagePath,
-	}
-	if err = r.docImageRepo.Update(newDocImage); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	if len(oldDocImage.Path) != 0 {
-		if err = os.Remove(oldDocImage.Path); err != nil {
-			log.Println(err)
-			err = errs.UnexpectedError
+	if updateDocReq.DeleteImage && len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
 		}
+		doc.ImageName = ""
 	}
-
+	if err = s.drugDocRepo.Update(doc); err != nil {
+		err = s.handleErr(err)
+	}
 	return
 }
 
-func (r *drugDocService) DeleteDrugDoc(docID string) (err error) {
-	if err = r.drugDocRepo.Delete(docID); err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
-	docImage, err := r.docImageRepo.SelectByDocID(docID)
+// UpdateDrugDocWithImage implements DrugDocService.
+func (s *service) UpdateDrugDocWithImage(updateDocReq *UpdateDrugDocRequest, file *multipart.File, header *multipart.FileHeader) (err error) {
+	var doc *drug_doc_repository.DrugDocWithID
+	now := time.Now()
+	imageName := fmt.Sprintf("%s_%s", now.String(), header.Filename)
+	doc, err = s.drugDocRepo.Get(updateDocReq.ID)
 	if err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
+		err = s.handleErr(err)
 		return
 	}
-
-	if err = r.docImageRepo.Delete(docID); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	if len(docImage.Path) != 0 {
-		if err = os.Remove(docImage.Path); err != nil {
-			log.Println(err)
-			err = errs.UnexpectedError
+	if len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
 		}
 	}
+	if err = s.imageStorageRepo.Save(file, imageName); err != nil {
+		err = s.handleErr(err)
+		return
+	}
 
+	doc.TradeName = updateDocReq.TradeName
+	doc.DrugName = updateDocReq.DrugName
+	doc.Description = updateDocReq.Description
+	doc.Preparation = updateDocReq.Preparation
+	doc.Caution = updateDocReq.Caution
+	doc.UpdateAt = &now
+	doc.ImageName = imageName
+	if err = s.drugDocRepo.Update(doc); err != nil {
+		err = s.handleErr(err)
+	}
 	return
 }
 
-func NewDrugDocService(drugDocRepo ports.DrugDocRepo, docImageRepo ports.DocImageRepo) ports.DrugDocService {
-	return &drugDocService{
-		drugDocRepo:  drugDocRepo,
-		docImageRepo: docImageRepo,
+// DeleteDrugDoc implements DrugDocService.
+func (s *service) DeleteDrugDoc(docID string) (err error) {
+	doc, err := s.drugDocRepo.Get(docID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
 	}
+	if len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
+		}
+	}
+
+	if err = s.drugDocRepo.Delete(docID); err != nil {
+		err = s.handleErr(err)
+	}
+	return
 }

@@ -1,181 +1,197 @@
 package video_doc_service
 
 import (
-	"admin_management_service/errs"
-	"admin_management_service/models"
-	"admin_management_service/ports"
 	"errors"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"log"
-	"net/http"
-	"os"
+	"mime/multipart"
+	"senior_project/admin_management_service/repositories/image_storage_repository"
+	"senior_project/admin_management_service/repositories/video_doc_repository"
 	"time"
 )
 
-type videoDocService struct {
-	videoDocRepo ports.VideoDocRepo
-	docImageRepo ports.DocImageRepo
+type service struct {
+	videoDocRepo     video_doc_repository.VideoDocRepository
+	imageStorageRepo image_storage_repository.ImageStorageRepository
 }
 
-func (r *videoDocService) handleEsErr(err error) (newErr error) {
-	var esErr types.ElasticsearchError
-	if errors.As(err, &esErr) {
-		switch esErr.Status {
-		case http.StatusNotFound:
-			newErr = errs.VideoDocNotFoundError
-		default:
-			newErr = errs.UnexpectedError
-		}
-	} else {
-		newErr = errs.UnexpectedError
+func New(videoDocRepo video_doc_repository.VideoDocRepository, imageStorageRepo image_storage_repository.ImageStorageRepository) VideoDocService {
+	return &service{
+		videoDocRepo:     videoDocRepo,
+		imageStorageRepo: imageStorageRepo,
+	}
+}
+
+func (s *service) handleErr(err error) error {
+	log.Println(err)
+	if errors.Is(err, video_doc_repository.ErrVideoDocNotFound) {
+		return ErrVideoDocNotFound
+	}
+	return ErrInternalVideoDocService
+}
+
+func (s *service) GetVideoDoc(docID string) (getRes *GetResponse, err error) {
+	doc, err := s.videoDocRepo.Get(docID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
+	}
+
+	var imageURL string
+	if len(doc.ImageName) != 0 {
+		imageURL = fmt.Sprintf("http://localhost:8080/image/%s", doc.ImageName)
+	}
+	getRes = &GetResponse{
+		Doc: VideoDoc{
+			ID:          docID,
+			Title:       doc.Title,
+			Description: doc.Description,
+			VideoURL:    doc.VideoURL,
+			CreateAt:    doc.CreateAt,
+			UpdateAt:    doc.UpdateAt,
+		},
+		ImageURL: imageURL,
 	}
 	return
 }
 
-func (r *videoDocService) handleMysqlErr(err error) (newErr error) {
-	if errors.Is(err, errs.DocImageNotFoundError) {
-		newErr = errs.DocImageNotFoundError
-	} else {
-		newErr = errs.UnexpectedError
-	}
-	return
-}
-
-func (r *videoDocService) CreateVideoDoc(doc models.VideoDoc, imageName string, imagePath string) (err error) {
+func (s *service) CreateVideoDoc(newDocReq *NewVideoDocRequest) (err error) {
 	now := time.Now()
-	doc.CreateAt = &now
-	doc.UpdateAt = &now
-	docID, err := r.videoDocRepo.Index(doc)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
+	doc := video_doc_repository.VideoDoc{
+		Title:       newDocReq.Title,
+		Description: newDocReq.Description,
+		VideoURL:    newDocReq.VideoURL,
+		CreateAt:    &now,
+		UpdateAt:    &now,
 	}
-
-	docImage := models.DocImage{
-		DocID: docID,
-		Name:  imageName,
-		Path:  imagePath,
+	if err = s.videoDocRepo.Create(doc); err != nil {
+		err = s.handleErr(err)
 	}
-	if err = r.docImageRepo.Insert(docImage); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-	}
-
 	return
 }
 
-func (r *videoDocService) GetVideoDoc(docID string) (doc models.VideoDocWithId, imageURL string, err error) {
-	doc, err = r.videoDocRepo.Get(docID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
+func (s *service) CreateVideoDocWithImage(newDocReq *NewVideoDocRequest, file *multipart.File, header *multipart.FileHeader) (err error) {
+	now := time.Now()
+	imageName := fmt.Sprintf("%s_%s", now.String(), header.Filename)
+	doc := video_doc_repository.VideoDoc{
+		Title:       newDocReq.Title,
+		Description: newDocReq.Description,
+		VideoURL:    newDocReq.VideoURL,
+		ImageName:   imageName,
+		CreateAt:    &now,
+		UpdateAt:    &now,
+	}
+	if err = s.videoDocRepo.Create(doc); err != nil {
+		err = s.handleErr(err)
 		return
 	}
 
-	docImage, err := r.docImageRepo.SelectByDocID(docID)
-	if err != nil {
-		err = r.handleMysqlErr(err)
-		return
+	if err = s.imageStorageRepo.Save(file, imageName); err != nil {
+		err = s.handleErr(err)
 	}
-
-	if len(docImage.Name) == 0 {
-		imageURL = ""
-		return
-	}
-	imageURL = fmt.Sprintf("http://localhost:8080/image/%s", docImage.Name)
 	return
 }
 
-func (r *videoDocService) SearchVideoDoc(from int, size int, keyword string) (docs []models.VideoDocWithId, total int, err error) {
+func (s *service) SearchVideoDoc(page int, pageSize int, keyword string) (searchRes *SearchResponse, err error) {
+	var docs *[]video_doc_repository.VideoDocWithID
+	var total int
+	from := (page - 1) * pageSize
 	if len(keyword) == 0 {
-		docs, total, err = r.videoDocRepo.SearchMatchAll(from, size)
+		docs, total, err = s.videoDocRepo.MatchAll(from, pageSize)
 	} else {
-		docs, total, err = r.videoDocRepo.SearchMatchKeyword(from, size, keyword)
+		docs, total, err = s.videoDocRepo.MatchKeyword(from, pageSize, keyword)
 	}
 
+	searchRes = &SearchResponse{
+		Data:  []VideoDoc{},
+		Total: total,
+	}
+	for _, doc := range *docs {
+		data := VideoDoc{
+			ID:          doc.ID,
+			Title:       doc.Title,
+			Description: doc.Description,
+			VideoURL:    doc.VideoURL,
+			CreateAt:    doc.CreateAt,
+			UpdateAt:    doc.UpdateAt,
+		}
+		searchRes.Data = append(searchRes.Data, data)
+	}
 	return
 }
 
-func (r *videoDocService) UpdateVideoDoc(doc models.VideoDocWithId, imageName string, imagePath string) (err error) {
-	oldDoc, err := r.videoDocRepo.Get(doc.ID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
+func (s *service) UpdateVideoDoc(updateDocReq *UpdateVideoDocRequest) (err error) {
+	var doc *video_doc_repository.VideoDocWithID
 	now := time.Now()
-	doc.CreateAt = oldDoc.CreateAt
+	doc, err = s.videoDocRepo.Get(updateDocReq.ID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
+	}
+
+	doc.Title = updateDocReq.Title
+	doc.Description = updateDocReq.Description
+	doc.VideoURL = updateDocReq.VideoURL
 	doc.UpdateAt = &now
-	if err = r.videoDocRepo.Update(doc); err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
-	oldDocImage, err := r.docImageRepo.SelectByDocID(doc.ID)
-	if err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	newDocImage := models.DocImage{
-		DocID: doc.ID,
-		Name:  imageName,
-		Path:  imagePath,
-	}
-	if err = r.docImageRepo.Update(newDocImage); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	if len(oldDocImage.Path) != 0 {
-		if err = os.Remove(oldDocImage.Path); err != nil {
-			log.Println(err)
-			err = errs.UnexpectedError
+	if updateDocReq.DeleteImage && len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
 		}
+		doc.ImageName = ""
 	}
-
+	if err = s.videoDocRepo.Update(doc); err != nil {
+		err = s.handleErr(err)
+	}
 	return
 }
 
-func (r *videoDocService) DeleteVideoDoc(docID string) (err error) {
-	if err = r.videoDocRepo.Delete(docID); err != nil {
-		log.Println(err)
-		err = r.handleEsErr(err)
-		return
-	}
-
-	docImage, err := r.docImageRepo.SelectByDocID(docID)
+func (s *service) UpdateVideoDocWithImage(updateDocReq *UpdateVideoDocRequest, file *multipart.File, header *multipart.FileHeader) (err error) {
+	var doc *video_doc_repository.VideoDocWithID
+	now := time.Now()
+	imageName := fmt.Sprintf("%s_%s", now.String(), header.Filename)
+	doc, err = s.videoDocRepo.Get(updateDocReq.ID)
 	if err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
+		err = s.handleErr(err)
 		return
 	}
-
-	if err = r.docImageRepo.Delete(docID); err != nil {
-		log.Println(err)
-		err = r.handleMysqlErr(err)
-		return
-	}
-
-	if len(docImage.Path) != 0 {
-		if err = os.Remove(docImage.Path); err != nil {
-			log.Println(err)
-			err = errs.UnexpectedError
+	if len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
 		}
 	}
+	if err = s.imageStorageRepo.Save(file, imageName); err != nil {
+		err = s.handleErr(err)
+		return
+	}
 
+	doc.Title = updateDocReq.Title
+	doc.Description = updateDocReq.Description
+	doc.VideoURL = updateDocReq.VideoURL
+	doc.UpdateAt = &now
+	doc.ImageName = imageName
+	if err = s.videoDocRepo.Update(doc); err != nil {
+		err = s.handleErr(err)
+	}
 	return
 }
 
-func NewVideoDocService(videoDocRepo ports.VideoDocRepo, docImageRepo ports.DocImageRepo) ports.VideoDocService {
-	return &videoDocService{
-		videoDocRepo: videoDocRepo,
-		docImageRepo: docImageRepo,
+func (s *service) DeleteVideoDoc(docID string) (err error) {
+	doc, err := s.videoDocRepo.Get(docID)
+	if err != nil {
+		err = s.handleErr(err)
+		return
 	}
+	if len(doc.ImageName) != 0 {
+		if err = s.imageStorageRepo.Delete(doc.ImageName); err != nil {
+			err = s.handleErr(err)
+			return
+		}
+	}
+
+	if err = s.videoDocRepo.Delete(docID); err != nil {
+		err = s.handleErr(err)
+	}
+	return
 }
