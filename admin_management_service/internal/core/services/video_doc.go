@@ -4,9 +4,10 @@ import (
 	"document_service/internal/core"
 	"document_service/internal/core/models"
 	"fmt"
-	"github.com/google/uuid"
 	"mime/multipart"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type AddNewVideoDocRequest struct {
@@ -111,7 +112,11 @@ func (s *videoDocService) SearchVideoDoc(page int, pageSize int, keyword string)
 		return
 	}
 
-	res.Data = docs
+	if total == 0 {
+		res.Data = []models.VideoDoc{}
+	} else {
+		res.Data = docs
+	}
 	res.Total = total
 	return
 }

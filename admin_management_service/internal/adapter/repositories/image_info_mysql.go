@@ -27,7 +27,6 @@ func (r *imageInfoMySQL) ReadByDocID(docID string) (info models.ImageInfo, err e
 	if err = stmt.QueryRow(docID).Scan(&info.DocID, &info.ImageName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = core.NewErrorNotFound(err)
-		} else {
 		}
 	}
 	return

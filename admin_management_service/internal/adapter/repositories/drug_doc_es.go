@@ -5,11 +5,11 @@ import (
 	"document_service/internal/core"
 	"document_service/internal/core/models"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/elastic/go-elasticsearch/v8"
 	"strings"
 	"time"
+
+	"github.com/elastic/go-elasticsearch/v8"
 )
 
 type DrugDocSource struct {
@@ -117,10 +117,11 @@ func (r DrugDocES) Pagination(query string) (docs []models.DrugDoc, total int, e
 		return
 	}
 
-	if total = searchResponse.Hits.Total.Value; total == 0 {
-		err = core.NewErrorNotFound(errors.New("search drug documents not found"))
-		return
-	}
+	// if total = searchResponse.Hits.Total.Value; total == 0 {
+	// 	err = core.NewErrorNotFound(errors.New("search drug documents not found"))
+	// 	return
+	// }
+	total = searchResponse.Hits.Total.Value
 
 	for _, hit := range searchResponse.Hits.Hits {
 		doc := models.DrugDoc{
