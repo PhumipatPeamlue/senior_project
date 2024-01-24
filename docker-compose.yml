@@ -1,16 +1,30 @@
-version: '3'
+version: '3.8'
 
 name: senior_project
 
 services:
-  elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
-    environment: ['CLI_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
+  image_info_db:
+    image: mysql:8.2
+    container_name: image_info_db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=image_info_db
     ports:
-      - 9200:9200
+      - "3306:3306"
     networks:
-      - spnet
+      - senior_project_network
+    volumes:
+      - .docker/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - image_info_db-data:/var/lib/mysql
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    container_name: es
+    environment: ['ES_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
+    ports:
+      - "9200:9200"
+    networks:
+      - senior_project_network
     ulimits:
       memlock:
         soft: -1
@@ -18,12 +32,12 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    deploy:    
+    deploy:
       resources:
-          limits:
-            cpus: '2.0'
-          reservations:
-            cpus: '1.0'
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '1.0'
     volumes:
       - es-data:/usr/share/elasticsearch/data
 
@@ -31,31 +45,17 @@ services:
     image: docker.elastic.co/kibana/kibana:8.11.3
     container_name: kibana
     environment:
-      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: d1a66dfd-c4d3-4a0a-8290-2abcb83ab3aa
+      - ELASTICSEARCH_HOSTS=http://es:9200
     ports:
-      - 5601:5601
+      - "5601:5601"
     networks:
-      - spnet
-    deploy:    
+      - senior_project_network
+    deploy:
       resources:
-          limits:
-            cpus: '2.0'
-          reservations:
-            cpus: '1.0'
-  
-  mysql:
-    image: mysql:8.2
-    container_name: mysql
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_DATABASE=senior_project
-    ports:
-      - 3306:3306
-    networks:
-      - spnet
-    volumes:
-      - mysql-data:/var/lib/mysql
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '1.0'
 
   admin_management_service:
     build:
@@ -64,7 +64,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - spnet
+      - senior_project_network
 
   drug_label_extraction_service:
     build:
@@ -73,12 +73,12 @@ services:
     ports:
       - 8000:8000
     networks:
-      - spnet
+      - senior_project_network
 
 networks:
-  spnet:
+  senior_project_network:
 
 volumes:
   es-data:
-  mysql-data:
+  image_info_db-data:
     driver: local

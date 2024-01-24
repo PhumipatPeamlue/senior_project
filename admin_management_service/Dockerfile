@@ -1,6 +1,5 @@
 FROM golang:1.21.5-bookworm
-
-RUN apt-get update && apt-get install -y netcat-openbsd
+LABEL authors="besto"
 
 WORKDIR /app
 
@@ -10,13 +9,16 @@ RUN go mod download
 
 COPY . .
 
-RUN chmod +x ./scripts/wait_es.sh
+RUN go build -o main ./cmd/rest/
 
-RUN go build -o main .
-
-ENV ES_URL=http://elasticsearch:9200
-ENV MYSQL_DSN=root:root@tcp(mysql:3306)/senior_project
+ENV ES_URL="http://es:9200"
+ENV MYSQL_DSN="root:root@tcp(image_info_db:3306)/image_info_db?parseTime=true"
+ENV VIDEO_DOC_INDEX="video_doc"
+ENV DRUG_DOC_INDEX="drug_doc"
+ENV HOST="localhost"
+ENV PORT="8080"
+ENV STORAGE_PATH="uploads"
 
 EXPOSE 8080
 
-CMD ["./scripts/wait_es.sh", "elasticsearch", "9200", "./main"]
+CMD ["./main"]
