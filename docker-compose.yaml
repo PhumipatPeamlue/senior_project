@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  liff_app_gateway:
+    container_name: liff_app_gateway
+    build:
+      context: ./liff_app_gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - user_service
+      - pet_service
+      - reminder_service
+    networks:
+      - senior_project_network
+
+  user_service:
+    container_name: user_service
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+
+  pet_service:
+    container_name: pet_service
+    build:
+      context: ./pet_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+
+  reminder_service:
+    container_name: reminder_service
+    build:
+      context: ./reminder_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+
+  drug_label_extraction_service:
+    container_name: drug_label_extraction_service
+    build:
+      context: ./drug_label_extraction_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+
+  image_storage_service:
+    container_name: image_storage_service
+    build:
+      context: ./image_storage_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+  
+  service_db:
+    image: mysql:8.2
+    container_name: service_db
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=service_db
+    networks:
+      - senior_project_network
+    volumes:
+      - .docker/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - service_db-data:/var/lib/mysql
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: es
+    environment: ['ES_JAVA_OPTS=-Xms2g -Xmx2g','bootstrap.memory_lock=true','discovery.type=single-node','xpack.security.enabled=false', 'xpack.security.enrollment.enabled=false']
+    networks:
+      - senior_project_network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '1.0'
+    volumes:
+      - ./init_script.sh:/usr/share/elasticsearch/config/init_script.sh
+      - es-data:/usr/share/elasticsearch/data
+    command: /bin/bash -c "/usr/share/elasticsearch/config/init_script.sh"
+  
+  document_service:
+    container_name: document_service
+    build:
+      context: ./document_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+  
+  notification_service:
+    container_name: notification_service
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    networks:
+      - senior_project_network
+
+networks:
+  senior_project_network:
+    driver: bridge
+
+volumes:
+  es-data:
+
+  service_db-data:
+    driver: local

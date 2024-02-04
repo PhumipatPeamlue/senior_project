@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS image_info (
+    id VARCHAR(255) PRIMARY KEY,
+    image_name VARCHAR(255)
+);
