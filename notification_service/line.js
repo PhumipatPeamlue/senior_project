@@ -10,7 +10,7 @@ async function sendNotification(notificationList) {
                 messages: [
                     {
                         type: 'flex',
-                        altText: "This is a Flex Message",
+                        altText: `แจ้งเตือนการใช้ยาของน้อง ${notification.name}`,
                         contents: {
                             "type": "bubble",
                             "body": {
@@ -85,7 +85,7 @@ async function sendNotification(notificationList) {
                                                     },
                                                     {
                                                         "type": "text",
-                                                        "text": `${notification.pet_id}`,
+                                                        "text": `${notification.name}`,
                                                         "wrap": true,
                                                         "color": "#666666",
                                                         "size": "sm",

@@ -3,10 +3,10 @@ const mysql = require("mysql2/promise")
 async function connectDB() {
     try {
         return await mysql.createConnection({
-            host: process.env.DATABASE_HOST || "reminder_service_db",
+            host: process.env.DATABASE_HOST || "localhost",
             user: "root",
             password: "root",
-            database: process.env.DATABASE_NAME || "reminder_service_db",
+            database: process.env.DATABASE_NAME || "service_db",
             timezone: "+00:00",
         })
     } catch (err) {
@@ -17,7 +17,7 @@ async function connectDB() {
 async function getNotSentNotificationList(connection) {
     try {
         const res = []
-        const [rows, fields] = await connection.execute("SELECT notifications.id, notifications.user_id, notifications.time, notifications.status, reminders.pet_id, reminders.drug_name, reminders.drug_usage FROM notifications INNER JOIN reminders ON reminders.id = notifications.reminder_id");
+        const [rows, fields] = await connection.execute("SELECT notifications.id, notifications.user_id, notifications.time, notifications.status, pets.name, reminders.drug_name, reminders.drug_usage FROM notifications INNER JOIN reminders ON reminders.id = notifications.reminder_id INNER JOIN pets ON reminders.pet_id = pets.id");
         for (let row of rows) {
             let notificationStatus = row.status
             let notificationTime = new Date(row.time)
@@ -47,5 +47,5 @@ async function changeNotificationStatus(connection, successList) {
 module.exports = {
     connectDB,
     getNotSentNotificationList,
-    changeNotificationStatus
+    changeNotificationStatus,
 };
