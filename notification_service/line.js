@@ -1,6 +1,17 @@
 const ACCESS_TOKEN = "gFETqcP4VRi5p/ti4eHBQFL1gnBj3UqWjoyU0u52g3UX20vnmRMjehc3gYyVajPjT8OZ/4sdUxk9kf68bVImo1rMrhj4EwERt8UxWh5+m12c6laBlDkLaNs6y4giHJGn+3VQhf4OFnaTlq48My3VDwdB04t89/1O/w1cDnyilFU='"
 const URL = "https://api.line.me/v2/bot/message/push"
 
+const dateFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Bangkok'
+};
+
 async function sendNotification(notificationList) {
     try {
         const successSendingList = []
@@ -63,7 +74,7 @@ async function sendNotification(notificationList) {
                                                     },
                                                     {
                                                         "type": "text",
-                                                        "text": `${notification.time.toLocaleString()}`,
+                                                        "text": `${notification.time.toLocaleString('en-US', dateFormatOptions)}`,
                                                         "wrap": true,
                                                         "color": "#666666",
                                                         "size": "sm",

@@ -17,12 +17,11 @@ async function connectDB() {
 async function getNotSentNotificationList(connection) {
     try {
         const res = []
-        const [rows, fields] = await connection.execute("SELECT notifications.id, notifications.user_id, notifications.time, notifications.status, pets.name, reminders.drug_name, reminders.drug_usage FROM notifications INNER JOIN reminders ON reminders.id = notifications.reminder_id INNER JOIN pets ON reminders.pet_id = pets.id");
+        const [rows, fields] = await connection.execute("SELECT notifications.id, notifications.user_id, notifications.time, pets.name, reminders.drug_name, reminders.drug_usage FROM notifications INNER JOIN reminders ON reminders.id = notifications.reminder_id INNER JOIN pets ON reminders.pet_id = pets.id WHERE status = 'not sent'");
         for (let row of rows) {
-            let notificationStatus = row.status
-            let notificationTime = new Date(row.time)
-            let now = new Date()
-            if (notificationTime <= now && notificationStatus === "not sent") {
+            let notificationTime = (new Date(row.time)).toLocaleString('en-US', {timeZone: 'Asia/Bangkok'})
+            let now = (new Date()).toLocaleString('en-US', {timeZone: 'Asia/Bangkok'})
+            if (notificationTime <= now) {
                 console.log(`notification id: ${row.id} is going to send to user`)
                 res.push(row)
             }
