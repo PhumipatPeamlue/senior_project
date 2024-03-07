@@ -1,4 +1,4 @@
-FROM golang:1.21.5-bookworm
+FROM golang:1.21.5-alpine
 LABEL authors="besto"
 
 WORKDIR /app
