@@ -2,22 +2,24 @@ package repositories
 
 import (
 	"bytes"
+	"document_service/internal/core"
 	"document_service/internal/core/domains"
-	"document_service/internal/core/ports"
-	"document_service/internal/core/services"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"net/http"
 	"strings"
 	"time"
 )
 
 type VideoDocSource struct {
-	Title       string     `json:"title"`
-	VideoURL    string     `json:"video_url"`
-	Description string     `json:"description"`
-	CreatedAt   *time.Time `json:"created_at"`
-	UpdatedAt   *time.Time `json:"updated_at"`
+	Title       string    `json:"title"`
+	VideoURL    string    `json:"video_url"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type VideoDocGetResponse struct {
@@ -42,6 +44,21 @@ type videoDocRepositoryES struct {
 	indexName string
 }
 
+func (r *videoDocRepositoryES) handleError(res *esapi.Response) error {
+	err := errors.New(res.String())
+
+	switch res.StatusCode {
+	case http.StatusNotFound:
+		err = core.NewErrDocNotFound(err)
+	case http.StatusConflict:
+		err = core.NewErrDocDuplicate(err)
+	case http.StatusBadRequest:
+		err = core.NewErrDocBadRequest(err)
+	}
+
+	return err
+}
+
 func (r *videoDocRepositoryES) Save(doc domains.VideoDoc) (err error) {
 	source := VideoDocSource{
 		Title:       doc.Title,
@@ -59,7 +76,7 @@ func (r *videoDocRepositoryES) Save(doc domains.VideoDoc) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 
 	return
@@ -70,7 +87,7 @@ func (r *videoDocRepositoryES) FindByID(id string) (doc domains.VideoDoc, err er
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 		return
 	}
 	defer res.Body.Close()
@@ -94,7 +111,7 @@ func (r *videoDocRepositoryES) Pagination(query string) (docs []domains.VideoDoc
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 		return
 	}
 	defer res.Body.Close()
@@ -104,10 +121,6 @@ func (r *videoDocRepositoryES) Pagination(query string) (docs []domains.VideoDoc
 		return
 	}
 
-	// if total = searchResponse.Hits.Total.Value; total == 0 {
-	// 	err = core.NewErrorNotFound(errors.New("search video documents not found"))
-	// 	return
-	// }
 	total = searchResponse.Hits.Total.Value
 
 	for _, hit := range searchResponse.Hits.Hits {
@@ -121,6 +134,11 @@ func (r *videoDocRepositoryES) Pagination(query string) (docs []domains.VideoDoc
 		}
 		docs = append(docs, doc)
 	}
+
+	if len(docs) == 0 {
+		err = core.NewErrDocNotFound(errors.New("no document in video_doc index"))
+	}
+
 	return
 }
 
@@ -134,7 +152,7 @@ func (r *videoDocRepositoryES) Update(doc domains.VideoDoc) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 	return
 }
@@ -144,12 +162,12 @@ func (r *videoDocRepositoryES) Delete(id string) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 	return
 }
 
-func NewVideoDocRepositoryES(es *elasticsearch.Client, indexName string) ports.VideoDocRepository {
+func NewVideoDocRepositoryES(es *elasticsearch.Client, indexName string) core.VideoDocRepositoryInterface {
 	return &videoDocRepositoryES{
 		es:        es,
 		indexName: indexName,

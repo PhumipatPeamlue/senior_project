@@ -2,24 +2,26 @@ package repositories
 
 import (
 	"bytes"
+	"document_service/internal/core"
 	"document_service/internal/core/domains"
-	"document_service/internal/core/ports"
-	"document_service/internal/core/services"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"net/http"
 	"strings"
 	"time"
 )
 
 type DrugDocSource struct {
-	TradeName   string     `json:"trade_name"`
-	DrugName    string     `json:"drug_name"`
-	Description string     `json:"description"`
-	Preparation string     `json:"preparation"`
-	Caution     string     `json:"caution"`
-	CreatedAt   *time.Time `json:"created_at"`
-	UpdatedAt   *time.Time `json:"updated_at"`
+	TradeName   string    `json:"trade_name"`
+	DrugName    string    `json:"drug_name"`
+	Description string    `json:"description"`
+	Preparation string    `json:"preparation"`
+	Caution     string    `json:"caution"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type DrugDocGetResponse struct {
@@ -44,6 +46,21 @@ type drugDocRepositoryES struct {
 	indexName string
 }
 
+func (r *drugDocRepositoryES) handleError(res *esapi.Response) error {
+	err := errors.New(res.String())
+
+	switch res.StatusCode {
+	case http.StatusNotFound:
+		err = core.NewErrDocNotFound(err)
+	case http.StatusConflict:
+		err = core.NewErrDocDuplicate(err)
+	case http.StatusBadRequest:
+		err = core.NewErrDocBadRequest(err)
+	}
+
+	return err
+}
+
 func (r *drugDocRepositoryES) Save(doc domains.DrugDoc) (err error) {
 	source := DrugDocSource{
 		TradeName:   doc.TradeName,
@@ -63,7 +80,7 @@ func (r *drugDocRepositoryES) Save(doc domains.DrugDoc) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 
 	return
@@ -74,7 +91,7 @@ func (r *drugDocRepositoryES) FindByID(id string) (doc domains.DrugDoc, err erro
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 		return
 	}
 	defer res.Body.Close()
@@ -100,7 +117,7 @@ func (r *drugDocRepositoryES) Pagination(query string) (docs []domains.DrugDoc, 
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 		return
 	}
 	defer res.Body.Close()
@@ -110,10 +127,6 @@ func (r *drugDocRepositoryES) Pagination(query string) (docs []domains.DrugDoc, 
 		return
 	}
 
-	// if total = searchResponse.Hits.Total.Value; total == 0 {
-	// 	err = core.NewErrorNotFound(errors.New("search drug documents not found"))
-	// 	return
-	// }
 	total = searchResponse.Hits.Total.Value
 
 	for _, hit := range searchResponse.Hits.Hits {
@@ -129,6 +142,11 @@ func (r *drugDocRepositoryES) Pagination(query string) (docs []domains.DrugDoc, 
 		}
 		docs = append(docs, doc)
 	}
+
+	if len(docs) == 0 {
+		err = core.NewErrDocNotFound(errors.New("no document in drug_doc index"))
+	}
+
 	return
 }
 
@@ -142,7 +160,7 @@ func (r *drugDocRepositoryES) Update(doc domains.DrugDoc) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 	return
 }
@@ -152,12 +170,12 @@ func (r *drugDocRepositoryES) Delete(id string) (err error) {
 	if err != nil {
 		return
 	} else if res.IsError() {
-		err = services.HandleEsErrorResponse(res)
+		err = r.handleError(res)
 	}
 	return
 }
 
-func NewDrugDocRepositoryEs(es *elasticsearch.Client, indexName string) ports.DrugDocRepository {
+func NewDrugDocRepositoryEs(es *elasticsearch.Client, indexName string) core.DrugDocRepositoryInterface {
 	return &drugDocRepositoryES{
 		es:        es,
 		indexName: indexName,
