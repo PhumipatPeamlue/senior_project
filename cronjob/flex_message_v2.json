@@ -1,0 +1,80 @@
+{
+    "type": "bubble",
+    "size": "mega",
+    "header": {
+      "type": "box",
+      "layout": "vertical",
+      "contents": [
+        {
+          "type": "text",
+          "text": "แจ้งเตือนการใช้ยา",
+          "wrap": true,
+          "weight": "bold",
+          "gravity": "center",
+          "size": "xxl",
+          "margin": "none",
+          "contents": [],
+          "color": "#ffffff"
+        },
+        {
+          "type": "text",
+          "text": "hello, world",
+          "contents": [
+            {
+              "type": "span",
+              "text": "ของน้อง  ",
+              "size": "xl"
+            },
+            {
+              "type": "span",
+              "text": "\"สกาย\"",
+              "size": "xl"
+            }
+          ],
+          "color": "#ffffff"
+        }
+      ]
+    },
+    "body": {
+      "type": "box",
+      "layout": "vertical",
+      "spacing": "md",
+      "contents": [
+        {
+          "type": "text",
+          "text": "ชื่อยา",
+          "size": "xxl",
+          "weight": "bold"
+        },
+        {
+          "type": "text",
+          "text": "ONSIA (Ondansetron 8 mg) ยารักษาคลื่นใส้ อาเจียน:เม็ด",
+          "size": "lg",
+          "wrap": true
+        },
+        {
+          "type": "separator"
+        },
+        {
+          "type": "text",
+          "text": "วิธีใช้ยา",
+          "size": "xxl",
+          "margin": "lg",
+          "gravity": "center",
+          "weight": "bold",
+          "wrap": true
+        },
+        {
+          "type": "text",
+          "text": "รับประทาน ครั้งละ 2 เม็ด วันละ 2 เวลา ก่อนอาหาร 1 ชั่วโมง เช้า เย็น",
+          "size": "lg",
+          "wrap": true
+        }
+      ]
+    },
+    "styles": {
+      "header": {
+        "backgroundColor": "#4ACE91"
+      }
+    }
+  }

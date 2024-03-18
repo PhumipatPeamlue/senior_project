@@ -1,0 +1,130 @@
+{
+  "to": "LINE_USER_ID",
+  "messages": [
+    {
+      "type": "flex",
+      "altText": "แจ้งเตือนการใช้ยาของน้อง PET_NAME",
+      "contents": {
+        "type": "bubble",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "แจ้งเตือนการใช้ยา",
+              "weight": "bold",
+              "size": "xl"
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "margin": "lg",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "ชื่อยา",
+                      "color": "#aaaaaa",
+                      "flex": 1,
+                      "size": "sm"
+                    },
+                    {
+                      "type": "text",
+                      "text": "DRUG_NAME",
+                      "color": "#666666",
+                      "flex": 5,
+                      "size": "sm"
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "spacing": "sm",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "เวลา",
+                      "color": "#aaaaaa",
+                      "size": "sm",
+                      "flex": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "NOTIFY_AT",
+                      "wrap": true,
+                      "color": "#666666",
+                      "size": "sm",
+                      "flex": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "spacing": "sm",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "สัตว์เลี้ยง",
+                      "color": "#aaaaaa",
+                      "size": "sm",
+                      "flex": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "PET_NAME",
+                      "wrap": true,
+                      "color": "#666666",
+                      "size": "sm",
+                      "flex": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "วิธีใช้",
+                      "flex": 1,
+                      "size": "sm",
+                      "color": "#aaaaaa"
+                    },
+                    {
+                      "type": "text",
+                      "flex": 5,
+                      "size": "sm",
+                      "color": "#666666",
+                      "text": "DRUG_USAGE"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [],
+              "margin": "sm"
+            }
+          ],
+          "flex": 0
+        }
+      }
+    }
+  ]
+}
