@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 RUN go build -o main ./cmd/app/
 ENV GIN_MODE=release
-ENV PET_DB=root:root@tcp(db:3306)/symptom_monitoring_and_treatment_suggestion_pets?parseTime=true&loc=Asia%2FBangkok
+ENV PET_DB_DSN=root:root@tcp(db:3306)/symptom_monitoring_and_treatment_suggestion_pets?parseTime=true&loc=Asia%2FBangkok
 ENV PORT=8080
 ENV TZ=Asia/Bangkok
 EXPOSE 8080
