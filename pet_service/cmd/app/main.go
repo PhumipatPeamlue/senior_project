@@ -27,7 +27,7 @@ func main() {
 	userHandler := http_gin.NewPetHandler(userService)
 
 	r := gin.Default()
-	r.Use(http_gin.Cors())
+	// r.Use(http_gin.Cors())
 
 	http_gin.PetRoutes(r, userHandler)
 

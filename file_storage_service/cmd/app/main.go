@@ -6,10 +6,11 @@ import (
 	"file_storage_service/internal/adapters/repositories"
 	"file_storage_service/internal/core"
 	"file_storage_service/internal/infrastructures"
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -33,7 +34,7 @@ func main() {
 	localFileStorageHandler := http_gin.NewLocalFileStorageHandler(localFileStorageService)
 
 	r := gin.Default()
-	r.Use(http_gin.Cors())
+	// r.Use(http_gin.Cors())
 
 	http_gin.ImageRoutes(r, localFileStorageHandler)
 

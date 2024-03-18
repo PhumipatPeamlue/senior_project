@@ -72,6 +72,15 @@ services:
     environment:
       - TZ=Asia/Bangkok
 
+  drug_label_extraction_service:
+    container_name: drug_label_extraction_service
+    build: drug_label_extraction_service/.
+    depends_on:
+      - user_service
+    restart: on-failure
+    environment:
+      - TZ=Asia/Bangkok
+
   liff_app_gateway:
     container_name: liff_app_gateway
     build: liff_app_gateway/.

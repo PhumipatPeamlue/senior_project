@@ -5,11 +5,12 @@ import (
 	"document_service/internal/adapters/repositories"
 	"document_service/internal/core"
 	"document_service/internal/infrastructures"
+	"log"
+	"os"
+
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"log"
-	"os"
 )
 
 var (
@@ -33,7 +34,7 @@ func main() {
 	drugDocHandler := http_gin.NewDrugDocHandler(drugDocService)
 
 	r := gin.Default()
-	r.Use(http_gin.Cors())
+	// r.Use(http_gin.Cors())
 
 	http_gin.DocRoutes(r, videoDocHandler, drugDocHandler)
 
