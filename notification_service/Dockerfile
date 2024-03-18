@@ -1,15 +1,20 @@
-FROM node:21
-LABEL authors="besto"
+FROM golang:1.22.0-alpine
 
-WORKDIR /usr/src/app
+LABEL authors="Besto"
 
-COPY package*.json ./
+RUN apk add --no-cache tzdata
 
-RUN npm install
-
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
+RUN go build -o main ./cmd/app/
+ENV GIN_MODE=release
+ENV TZ=Asia/Bangkok
 
-ENV DATABASE_HOST="service_db"
-ENV DATABASE_NAME="service_db"
+ENV NOTIFICATION_DB=root:root@tcp(db:3306)/symptom_monitoring_and_treatment_suggestion_notifications?parseTime=true&loc=Asia%2FBangkok
+ENV PORT=8080
+EXPOSE 8080
 
-CMD ["node", "index.js"]
+
+CMD [ "./main" ]
