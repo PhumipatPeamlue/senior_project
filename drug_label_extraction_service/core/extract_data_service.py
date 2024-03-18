@@ -1,7 +1,12 @@
 import re
-from services.user.service import get_user_time_settings
 
-def clean_text(text):
+import sys
+
+sys.path.append("../adapters")
+from adapters.external_api.user_service import get_user_time_settings
+
+
+def _clean_text(text):
     res = ''
     for line in text.splitlines():
         if line == '':
@@ -10,7 +15,7 @@ def clean_text(text):
     return res.strip()
 
 
-def check_period(text):
+def _check_period(text):
     keywords = ['เช้า', 'กลางวัน', 'เย็น', 'ก่อนนอน']
     res = {'เช้า': False, 'กลางวัน': False, 'เย็น': False, 'ก่อนนอน': False}
     period_type = False
@@ -26,7 +31,7 @@ def check_period(text):
     return None
 
 
-def check_hour(text):
+def _check_hour(text):
     pattern = r'.+ ทุกๆ (\d+) (.+)'
     match = re.search(pattern, text)
 
@@ -38,7 +43,7 @@ def check_hour(text):
     return {'num': num, 'unit': unit}
 
 
-def check_frequency(text):
+def _check_frequency(text):
     keywords = ['วันเว้นวัน']
     dict = {'วันเว้นวัน': 'every other day'}
 
@@ -50,15 +55,15 @@ def check_frequency(text):
 
 
 def extract_data(drug_name_text, usage_text, user_id):
-    drug_name = clean_text(drug_name_text)
-    usage = clean_text(usage_text)
+    drug_name = _clean_text(drug_name_text)
+    usage = _clean_text(usage_text)
     res = {'drug_name': drug_name, 'drug_usage': usage, 'reminder_type': '', 'frequency': 'every day'}
 
-    freq = check_frequency(usage)
+    freq = _check_frequency(usage)
     if freq:
         res['frequency'] = freq
 
-    ok = check_period(usage)
+    ok = _check_period(usage)
     if ok:
         user_time_settings = get_user_time_settings(user_id)
         res['reminder_type'] = 'period'
@@ -80,7 +85,7 @@ def extract_data(drug_name_text, usage_text, user_id):
             res['before_bed'] = None
         return res
 
-    ok = check_hour(usage)
+    ok = _check_hour(usage)
     if ok:
         res['reminder_type'] = 'hour'
         res['every'] = ok['num']

@@ -5,10 +5,10 @@ from fastapi import FastAPI, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Union, Annotated
 
-from services.image_preprocessing.service import preprocess
-from services.ocr.service import ocr
-from services.extract_data.service import extract_data
-from services.user.service import get_user_time_settings
+from core.image_preprocessing_service import preprocess
+from core.ocr_service import ocr
+from core.extract_data_service import extract_data
+
 
 usage_config = '--oem 3 --psm 6 -l tha'
 drug_name_config = '--oem 3 --psm 6 -l tha+eng'
