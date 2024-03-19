@@ -25,7 +25,7 @@ func main() {
 	userHandler := http_gin.NewUserHandler(userService)
 
 	r := gin.Default()
-	// r.Use(http_gin.Cors())
+	r.Use(http_gin.Cors())
 	http_gin.UserRoutes(r, userHandler)
 	err := r.Run()
 	if err != nil {
