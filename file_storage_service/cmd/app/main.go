@@ -34,7 +34,7 @@ func main() {
 	localFileStorageHandler := http_gin.NewLocalFileStorageHandler(localFileStorageService)
 
 	r := gin.Default()
-	// r.Use(http_gin.Cors())
+	r.Use(http_gin.Cors())
 
 	http_gin.ImageRoutes(r, localFileStorageHandler)
 

@@ -39,7 +39,7 @@ func main() {
 	reminderHandler := http_gin.NewReminderHandler(reminderService)
 
 	r := gin.Default()
-	// r.Use(http_gin.Cors())
+	r.Use(http_gin.Cors())
 
 	http_gin.ReminderRoutes(r, reminderHandler)
 

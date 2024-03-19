@@ -34,7 +34,7 @@ func main() {
 	drugDocHandler := http_gin.NewDrugDocHandler(drugDocService)
 
 	r := gin.Default()
-	// r.Use(http_gin.Cors())
+	r.Use(http_gin.Cors())
 
 	http_gin.DocRoutes(r, videoDocHandler, drugDocHandler)
 
