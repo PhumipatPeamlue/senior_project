@@ -26,17 +26,20 @@ func init() {
 func main() {
 	videoDocRepository := repositories.NewVideoDocRepositoryES(esClient, os.Getenv("VIDEO_DOC_INDEX"))
 	drugDocRepository := repositories.NewDrugDocRepositoryEs(esClient, os.Getenv("DRUG_DOC_INDEX"))
+	docRepository := repositories.NewDocRepositoryES(esClient, os.Getenv("VIDEO_DOC_INDEX"), os.Getenv("DRUG_DOC_INDEX"))
 
 	videoDocService := core.NewVideoDocService(videoDocRepository)
 	drugDocService := core.NewDrugDocService(drugDocRepository)
+	docService := core.NewDocService(docRepository)
 
 	videoDocHandler := http_gin.NewVideoDocHandler(videoDocService)
 	drugDocHandler := http_gin.NewDrugDocHandler(drugDocService)
+	docHandler := http_gin.NewDocHandler(docService)
 
 	r := gin.Default()
 	r.Use(http_gin.Cors())
 
-	http_gin.DocRoutes(r, videoDocHandler, drugDocHandler)
+	http_gin.DocRoutes(r, docHandler, videoDocHandler, drugDocHandler)
 
 	err := r.Run()
 	if err != nil {

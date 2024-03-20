@@ -2,8 +2,11 @@ package http_gin
 
 import "github.com/gin-gonic/gin"
 
-func DocRoutes(r *gin.Engine, vh *VideoDocHandler, dh *DrugDocHandler) {
+func DocRoutes(r *gin.Engine, h *DocHandler, vh *VideoDocHandler, dh *DrugDocHandler) {
 	docRouter := r.Group("/document")
+	{
+		docRouter.GET("/search", h.SearchDoc)
+	}
 
 	videoDocRouter := docRouter.Group("/video_doc")
 	{
