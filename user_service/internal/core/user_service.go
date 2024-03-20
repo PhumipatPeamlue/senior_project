@@ -11,6 +11,7 @@ type UserServiceInterface interface {
 
 type userService struct {
 	repository UserRepositoryInterface
+	petService PetServiceInterface
 }
 
 // FindUserByLineUserID implements UserServiceInterface.
@@ -41,11 +42,17 @@ func (u *userService) ChangeTimeSetting(ctx context.Context, lineUserID string, 
 // RemoveUserByLineUserID implements UserServiceInterface.
 func (u *userService) RemoveUserByLineUserID(ctx context.Context, lineUserID string) (err error) {
 	err = u.repository.DeleteByID(ctx, lineUserID)
+	if err != nil {
+		return
+	}
+
+	err = u.petService.DeleteUserPet(ctx, lineUserID)
 	return
 }
 
-func NewUserService(repository UserRepositoryInterface) UserServiceInterface {
+func NewUserService(repository UserRepositoryInterface, petService PetServiceInterface) UserServiceInterface {
 	return &userService{
 		repository: repository,
+		petService: petService,
 	}
 }

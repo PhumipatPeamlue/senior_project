@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
+	"user_service/internal/adapters/external_api"
 	"user_service/internal/adapters/http_gin"
 	"user_service/internal/adapters/repositories"
 	"user_service/internal/core"
@@ -19,9 +21,11 @@ func main() {
 	userDBDSN := os.Getenv("USER_DB_DSN")
 	userDB := infrastructures.ConnectRDB(driver, userDBDSN)
 	defer userDB.Close()
+	httpClient := &http.Client{}
 
 	userRepository := repositories.NewUserRepositorySQL(userDB)
-	userService := core.NewUserService(userRepository)
+	petService := external_api.NewPetService(httpClient)
+	userService := core.NewUserService(userRepository, petService)
 	userHandler := http_gin.NewUserHandler(userService)
 
 	r := gin.Default()
