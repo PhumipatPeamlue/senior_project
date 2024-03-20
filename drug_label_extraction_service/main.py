@@ -34,7 +34,7 @@ async def say_hello(name: str):
     return {"message": f"Hello {name}"}
 
 
-@app.post("/drug_label_extraction")
+@app.post("/drug_label_extraction/")
 async def extract_drug_label(user_id: Annotated[str, Form()], file: Union[UploadFile, None] = None):
     if not file:
         raise HTTPException(status_code=404, detail="image file not found")
