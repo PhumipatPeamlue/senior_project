@@ -94,6 +94,7 @@ services:
     restart: on-failure
   
   es:
+    container_name: es
     build: elasticsearch/.
     ports:
       - "9200:9200"
