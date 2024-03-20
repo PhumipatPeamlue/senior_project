@@ -40,8 +40,27 @@ func (u *UserHandler) FindUserByLineUserID(c *gin.Context) {
 
 	user, err := u.service.FindUserByLineUserID(ctx, lineUserID)
 	if err != nil {
-		u.handleError(c, err)
-		return
+		var errUserNotFound *core.ErrUserNotFound
+		if errors.As(err, &errUserNotFound) {
+			err = nil
+		} else {
+			u.handleError(c, err)
+			return
+		}
+	}
+
+	if user.CreatedAt().IsZero() {
+		err = u.service.AddNewUser(ctx, lineUserID)
+		if err != nil {
+			u.handleError(c, err)
+			return
+		}
+
+		user, err = u.service.FindUserByLineUserID(ctx, lineUserID)
+		if err != nil {
+			u.handleError(c, err)
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, newUserResponse(user))
