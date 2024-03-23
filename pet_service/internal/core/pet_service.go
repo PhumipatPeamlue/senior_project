@@ -5,7 +5,7 @@ import "context"
 type PetServiceInterface interface {
 	FindPet(ctx context.Context, petID string) (Pet, error)
 	FindAllUserPets(ctx context.Context, userID string) ([]Pet, error)
-	AddNewPet(ctx context.Context, userID, petName string) error
+	AddNewPet(ctx context.Context, userID, petName string) (string, error)
 	ChangePetName(ctx context.Context, petID, newName string) error
 	RemovePet(ctx context.Context, petID string) error
 	RemoveAllUserPets(ctx context.Context, userID string) error
@@ -25,10 +25,10 @@ func (p *petService) FindAllUserPets(ctx context.Context, userID string) ([]Pet,
 	return pets, err
 }
 
-func (p *petService) AddNewPet(ctx context.Context, userID string, petName string) error {
+func (p *petService) AddNewPet(ctx context.Context, userID string, petName string) (string, error) {
 	pet := newPet(userID, petName)
 	err := p.repository.Create(ctx, pet)
-	return err
+	return pet.id, err
 }
 
 func (p *petService) ChangePetName(ctx context.Context, petID string, newName string) error {

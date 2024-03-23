@@ -45,13 +45,16 @@ func (p *petHandler) AddNewPet(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := p.service.AddNewPet(ctx, body.UserID, body.Name)
+	petID, err := p.service.AddNewPet(ctx, body.UserID, body.Name)
 	if err != nil {
 		p.handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "add a new pet successfully"})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "add a new pet successfully",
+		"pet_id":  petID,
+	})
 }
 
 func (p *petHandler) ChangePetName(c *gin.Context) {
