@@ -3,12 +3,13 @@ package core
 import (
 	"document_service/internal/core/domains"
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type DrugDocServiceInterface interface {
-	AddNewDrugDoc(tradeName string, drugName string, description string, preparation string, caution string) (err error)
+	AddNewDrugDoc(tradeName string, drugName string, description string, preparation string, caution string) (docID string, err error)
 	GetDrugDoc(docID string) (doc domains.DrugDoc, err error)
 	SearchDrugDoc(page int, pageSize int, keyword string) (docs []domains.DrugDoc, total int, err error)
 	ChangeDrugDocInfo(docID string, tradeName string, drugName string, description string, preparation string, caution string) (err error)
@@ -19,8 +20,8 @@ type drugDocService struct {
 	repo DrugDocRepositoryInterface
 }
 
-func (s *drugDocService) AddNewDrugDoc(tradeName string, drugName string, description string, preparation string, caution string) (err error) {
-	docID := uuid.New().String()
+func (s *drugDocService) AddNewDrugDoc(tradeName string, drugName string, description string, preparation string, caution string) (docID string, err error) {
+	docID = uuid.New().String()
 	now := time.Now().Local()
 	doc := domains.DrugDoc{
 		ID:          docID,

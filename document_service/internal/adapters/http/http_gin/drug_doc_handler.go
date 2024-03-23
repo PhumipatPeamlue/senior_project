@@ -3,9 +3,10 @@ package http_gin
 import (
 	"document_service/internal/core"
 	"errors"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type AddNewDrugDocRequest struct {
@@ -56,13 +57,16 @@ func (h *DrugDocHandler) AddNewDrugDocHandler(c *gin.Context) {
 		return
 	}
 
-	err := h.service.AddNewDrugDoc(body.TradeName, body.DrugName, body.Description, body.Preparation, body.Caution)
+	docID, err := h.service.AddNewDrugDoc(body.TradeName, body.DrugName, body.Description, body.Preparation, body.Caution)
 	if err != nil {
 		h.handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "add new drug document successfully"})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "add new drug document successfully",
+		"doc_id":  docID,
+	})
 }
 
 func (h *DrugDocHandler) GetDrugDocHandler(c *gin.Context) {
