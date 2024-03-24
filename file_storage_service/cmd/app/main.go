@@ -18,6 +18,9 @@ var (
 )
 
 func init() {
+	if err := os.Mkdir("bucket", 0755); err != nil {
+		log.Fatal(err)
+	}
 	godotenv.Load()
 
 	dsn := os.Getenv("FILE_INFO_DB")
