@@ -79,6 +79,16 @@ def _crop_image(image, coord):
     x, y, w, h = coord[0], coord[1], coord[2], coord[3]
     return image[y:y + h, x:x + w]
 
+def _rotate_image(image, h, w, y):
+    if h > w:
+        if y > 1000:
+            return cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
+        else:
+            return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    else:
+        if y > 1000:
+            return cv2.rotate(image, cv2.ROTATE_180)
+    return image
 
 def preprocess(image, template):
     filtered_image = _apply_filter(image)
@@ -92,10 +102,12 @@ def preprocess(image, template):
     cropped = un_warped[0:h, 0:w]
     gray = _apply_gray(cropped)
     thresh = _apply_threshold(gray)
-    resize = _resize_image(thresh)
 
     gray_template_image = _apply_gray(template)
     thresh_template_image = _apply_threshold(gray_template_image)
+    x, y = _match_template(thresh, thresh_template_image)
+    rotated = _rotate_image(thresh, h, w, y)
+    resize = _resize_image(rotated)
     x, y = _match_template(resize, thresh_template_image)
 
     usage_text_image = _crop_image(resize, (x - 100, y + 500, 2200, 350))
