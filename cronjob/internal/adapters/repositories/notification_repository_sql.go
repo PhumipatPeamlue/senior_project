@@ -6,8 +6,9 @@ import (
 	"cronjob/internal/core/domains"
 	"database/sql"
 	"errors"
-	"github.com/go-sql-driver/mysql"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 type notificationRepositorySQL struct {
@@ -17,7 +18,7 @@ type notificationRepositorySQL struct {
 func (n *notificationRepositorySQL) ReadByWaitStatus(ctx context.Context) (notifications []domains.Notification, err error) {
 	var query string = `
 		SELECT *
-		FROM notifications
+		FROM notification_records
 		WHERE status = 'wait' AND notify_at <= CONVERT_TZ(CURRENT_TIMESTAMP(), 'UTC', 'Asia/Bangkok')
 	`
 	var id int
@@ -43,7 +44,7 @@ func (n *notificationRepositorySQL) ReadByWaitStatus(ctx context.Context) (notif
 
 func (n *notificationRepositorySQL) Create(ctx context.Context, notification domains.Notification) (err error) {
 	query := `
-		INSERT INTO notifications (
+		INSERT INTO notification_records (
 			pet_id, reminder_id, notify_at, status, created_at, updated_at
 		)
 		VALUES (?, ?, ?, ?, ?, ?)
@@ -67,7 +68,7 @@ func (n *notificationRepositorySQL) Create(ctx context.Context, notification dom
 
 func (n *notificationRepositorySQL) Update(ctx context.Context, notification domains.Notification) (err error) {
 	query := `
-		UPDATE notifications SET
+		UPDATE notification_records SET
 			status = ?, updated_at = ?
 		WHERE id = ?
 	`

@@ -17,35 +17,24 @@ import (
 )
 
 var (
-	reminderDB     *sql.DB
-	notificationDB *sql.DB
-	petDB          *sql.DB
-	httpClient     *http.Client
+	db         *sql.DB
+	httpClient *http.Client
 )
 
 func init() {
 	godotenv.Load()
 
-	reminderDbDsn := os.Getenv("REMINDER_DB")
-	reminderDB = infrastructures.ConnectRDB("mysql", reminderDbDsn)
-
-	notificationDbDsn := os.Getenv("NOTIFICATION_DB")
-	notificationDB = infrastructures.ConnectRDB("mysql", notificationDbDsn)
-
-	petDbDsn := os.Getenv("PET_DB")
-	petDB = infrastructures.ConnectRDB("mysql", petDbDsn)
-
+	DB_DSN := os.Getenv("DB_DSN")
+	db = infrastructures.ConnectRDB("mysql", DB_DSN)
 	httpClient = &http.Client{}
 }
 
 func main() {
-	defer reminderDB.Close()
-	defer notificationDB.Close()
-	defer petDB.Close()
+	defer db.Close()
 
-	reminderRepository := repositories.NewReminderRepositorySQL(reminderDB)
-	notificationRepository := repositories.NewNotificationRepositorySQL(notificationDB)
-	petRepository := repositories.NewPetRepositorySQL(petDB)
+	reminderRepository := repositories.NewReminderRepositorySQL(db)
+	notificationRepository := repositories.NewNotificationRepositorySQL(db)
+	petRepository := repositories.NewPetRepositorySQL(db)
 
 	lineNotificationService := core.NewLineNotificationService(httpClient)
 

@@ -16,7 +16,7 @@ type reminderRepositorySQL struct {
 func (r *reminderRepositorySQL) ReadAll(ctx context.Context) (reminders []domains.Reminder, err error) {
 	query := `
 		SELECT id, pet_id, drug_name, drug_usage, frequency_day_usage, renew_in, created_at, updated_at, type
-		FROM reminders
+		FROM notifications
 	`
 
 	rows, err := r.db.QueryContext(ctx, query)
@@ -46,7 +46,7 @@ func (r *reminderRepositorySQL) ReadAll(ctx context.Context) (reminders []domain
 func (r *reminderRepositorySQL) ReadByID(ctx context.Context, id string) (reminder domains.Reminder, err error) {
 	query := `
 		SELECT pet_id, drug_name, drug_usage, frequency_day_usage, renew_in, created_at, updated_at, type
-		FROM reminders
+		FROM notifications
 		WHERE id = ?
 	`
 	var petID, reminderType string
@@ -73,15 +73,15 @@ func (r *reminderRepositorySQL) ReadByID(ctx context.Context, id string) (remind
 func (r *reminderRepositorySQL) ReadAllZeroRenew(ctx context.Context) (reminders []domains.Reminder, err error) {
 	query := `
 		SELECT
-		    r.id AS id,
-		    r.pet_id AS pet_id,
-		    r.type AS type,
-		    r.drug_name AS drug_name,
-		    r.drug_usage AS drug_usage,
-		    r.frequency_day_usage AS frequency_day_usage,
-			r.renew_in AS renew_in,
-			r.created_at AS created_at,
-			r.updated_at AS updated_at,
+		    n.id AS id,
+		    n.pet_id AS pet_id,
+		    n.type AS type,
+		    n.drug_name AS drug_name,
+		    n.drug_usage AS drug_usage,
+		    n.frequency_day_usage AS frequency_day_usage,
+			n.renew_in AS renew_in,
+			n.created_at AS created_at,
+			n.updated_at AS updated_at,
 			hi.first_usage AS first_usage,
 			hi.every AS every,
 			pi.morning AS morning,
@@ -89,9 +89,9 @@ func (r *reminderRepositorySQL) ReadAllZeroRenew(ctx context.Context) (reminders
 			pi.evening AS evening,
 			pi.before_bed AS before_bed
 		FROM
-		    reminders AS r
-		LEFT JOIN hour_info AS hi on r.id = hi.reminder_id
-		LEFT JOIN period_info AS pi on r.id = pi.reminder_id
+		    notifications AS n
+		LEFT JOIN hour_info AS hi on n.id = hi.notification_id
+		LEFT JOIN period_info AS pi on n.id = pi.notification_id
 		WHERE
 		    renew_in = 0
 	`
@@ -123,7 +123,7 @@ func (r *reminderRepositorySQL) ReadAllZeroRenew(ctx context.Context) (reminders
 }
 
 func (r *reminderRepositorySQL) UpdateRenew(ctx context.Context, reminder domains.Reminder) (err error) {
-	query := "UPDATE reminders SET renew_in = ?, updated_at = ? WHERE id = ?"
+	query := "UPDATE notifications SET renew_in = ?, updated_at = ? WHERE id = ?"
 	_, err = r.db.ExecContext(ctx, query, reminder.RenewIn(), reminder.UpdatedAt(), reminder.ID())
 	return
 }
